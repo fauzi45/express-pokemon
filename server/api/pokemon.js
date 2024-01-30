@@ -55,11 +55,23 @@ const getMyPokemon = async (request, reply) => {
   }
 };
 
-
+const releaseMyPokemon = async (request, reply) => {
+  try {
+    const { id } = request.params;
+    const data = await PokemonHelper.releasePoke(id);
+    reply
+      .status(200)
+      .send({ message: "Data Pokemon  berhasil di release", data });
+  } catch (err) {
+    console.error("Error:", err);
+    reply.status(400).send({ message: err.message });
+  }
+};
 
 Router.get("/all", allPokemon);
 Router.get("/detail/:id", detailPokemon);
 Router.post("/catch", catchPokemon);
 Router.get("/my-pokemon", getMyPokemon);
+Router.delete("/delete/:id", releaseMyPokemon);
 
 module.exports = Router;

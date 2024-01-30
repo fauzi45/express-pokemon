@@ -86,11 +86,32 @@ const getMyPoke = async () => {
   }
 };
 
+const releasePoke = async (id) => {
+  try {
+    const randomNumber = Math.floor(Math.random() * 10) + 1;
 
+    if (general.isPrime(randomNumber)) {
+      const data = fs.readFileSync(localUrl, "utf-8");
+      const jsonData = JSON.parse(data);
+      const release = jsonData.filter((poke) => String(poke.id) !== id);
+      if (!release) {
+        throw new Error("Gagal Release pokemon");
+      }
+      fs.writeFileSync(dataPath, JSON.stringify(release));
+      return Promise.resolve(release);
+    } else {
+      throw new Error("Number bukan prima, silahkan ulang kembali");
+    }
+  } catch (error) {
+    console.log("Gagal mendapatkan data Pokemon");
+    throw error;
+  }
+};
 
 module.exports = {
   getPokemonList,
   getPokemonDetail,
   catchPokemon,
   getMyPoke,
+  releasePoke
 };
