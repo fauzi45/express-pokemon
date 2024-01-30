@@ -43,22 +43,23 @@ const catchPokemon = async (name) => {
   try {
     const isCaught = Math.random() < 1;
     if (isCaught) {
-      let fibo = 0;
       const dataLocal = fs.readFileSync(localUrl, "utf-8");
       const jsonData = JSON.parse(dataLocal);
 
       const response = await general.commonHttpRequest({
         method: "get",
         baseURL: baseUrl,
-        url: `pokemon/${name}`,
+        url: `pokemon/${name.toLowerCase()}`,
       });
-      const pokemonSame = jsonData.filter((pokemon) => pokemon.name === name);
+      const pokemonSame = jsonData.filter(
+        (pokemon) => pokemon.name === name.toLowerCase()
+      );
       const fibonacciCount = general.fibonacci(pokemonSame.length - 1);
       const data = {
         id: jsonData.length + 1,
         name: response.name,
         nickname: `${response.name}${
-          pokemonSame.length === 0 ? "" : "-" +fibonacciCount
+          pokemonSame.length === 0 ? "" : "-" + fibonacciCount
         }`,
       };
 
@@ -108,10 +109,43 @@ const releasePoke = async (id) => {
   }
 };
 
+const renamePoke = async (id, updatedDatas) => {
+  try {
+    const { nickname } = updatedDatas;
+    const data = fs.readFileSync(localUrl, "utf-8");
+    const jsonData = JSON.parse(data);
+    const index = jsonData.findIndex((pokemon) => String(pokemon.id) === id);
+    if (index === -1) {
+      throw new Error("Pokemon dengan nama tersebut tidak ditemukan");
+    }
+    const pokemonSame = jsonData.filter((pokemon) =>
+      pokemon.nickname.includes(nickname.toLowerCase())
+    );
+    if (!pokemonSame) {
+      throw new Error("Gagal mendapatkan rename");
+    }
+    const fibonacciCount = general.fibonacci(pokemonSame.length - 1);
+    const updatedPokemon = {
+      ...jsonData[index],
+      nickname:
+        `${nickname.toLowerCase()}${pokemonSame.length === 0 ? "" : "-" + fibonacciCount}` ||
+        jsonData[index].nickname,
+    };
+
+    jsonData[index] = updatedPokemon;
+    fs.writeFileSync(localUrl, JSON.stringify(jsonData));
+    return updatedPokemon;
+  } catch (error) {
+    console.log("gagal rename pokemon");
+    throw error;
+  }
+};
+
 module.exports = {
   getPokemonList,
   getPokemonDetail,
   catchPokemon,
   getMyPoke,
   releasePoke,
+  renamePoke,
 };

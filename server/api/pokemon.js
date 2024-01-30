@@ -2,6 +2,7 @@ const Router = require("express").Router();
 
 const { request } = require("express");
 const PokemonHelper = require("../helpers/pokemonHelper");
+const ValidationHelper = require("../helpers/validationHelper");
 
 const allPokemon = async (request, reply) => {
   try {
@@ -68,10 +69,26 @@ const releaseMyPokemon = async (request, reply) => {
   }
 };
 
+const renamePokemon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nickname } = req.body;
+    const renamedPoke = await PokemonHelper.renamePoke(id, {
+      nickname,
+    });
+    res
+      .status(200)
+      .send({ message: "Data Pokemon Detail berhasil diupdate", renamedPoke });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send({ message: error.message });
+  }
+};
+
 Router.get("/all", allPokemon);
 Router.get("/detail/:id", detailPokemon);
 Router.post("/catch", catchPokemon);
 Router.get("/my-pokemon", getMyPokemon);
 Router.delete("/delete/:id", releaseMyPokemon);
-
+Router.put("/rename/:id", renamePokemon);
 module.exports = Router;
