@@ -34,17 +34,32 @@ const catchPokemon = async (req, res) => {
   try {
     const { name } = req.body;
     const data = await PokemonHelper.catchPokemon(name);
-    res
-      .status(200)
-      .send({ message: "Pokemon berhasil ditangkap", data });
+    res.status(200).send({ message: "Pokemon berhasil ditangkap", data });
   } catch (err) {
     console.error("Gagal mendapatkan pokemon >>>>>", err.message);
     res.status(400).send({ message: err.message });
   }
 };
 
+const getMyPokemon = async (request, reply) => {
+  try {
+    const response = await PokemonHelper.getMyPoke();
+    return reply
+      .status(200)
+      .send({ message: "Data Pokemon Saya berhasil didapat", data: response });
+  } catch (err) {
+    console.log("Data Pokemon gagal didapat");
+    reply
+      .status(400)
+      .send({ message: "Data Pokemon gagal didapat", data: err.message });
+  }
+};
+
+
+
 Router.get("/all", allPokemon);
-Router.get("/:id", detailPokemon);
+Router.get("/detail/:id", detailPokemon);
 Router.post("/catch", catchPokemon);
+Router.get("/my-pokemon", getMyPokemon);
 
 module.exports = Router;

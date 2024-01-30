@@ -5,6 +5,7 @@ const dataPath = (__dirname, "./assets/pokemon.json");
 
 const baseUrl = "https://pokeapi.co/api/v2/";
 const localUrl = (__dirname, "./assets/pokemon.json");
+
 const getPokemonList = async () => {
   try {
     const response = await general.commonHttpRequest({
@@ -42,6 +43,7 @@ const catchPokemon = async (name) => {
   try {
     const isCaught = Math.random() < 1;
     if (isCaught) {
+      let fibo = 0;
       const dataLocal = fs.readFileSync(localUrl, "utf-8");
       const jsonData = JSON.parse(dataLocal);
 
@@ -50,13 +52,16 @@ const catchPokemon = async (name) => {
         baseURL: baseUrl,
         url: `pokemon/${name}`,
       });
-
+      const pokemonSame = jsonData.filter((pokemon) => pokemon.name === name);
+      if (pokemonSame) {
+        fibo = fibo + 1;
+      }
       const data = {
         id: jsonData.length + 1,
         name: response.name,
-        nickname: response.name,
+        nickname: `${response.name}-${fibo}`,
       };
-      
+
       jsonData.push(data);
       fs.writeFileSync(localUrl, JSON.stringify(jsonData));
       return Promise.resolve(data);
@@ -70,8 +75,22 @@ const catchPokemon = async (name) => {
   }
 };
 
+const getMyPoke = async () => {
+  try {
+    const dataLocal = fs.readFileSync(localUrl, "utf-8");
+    const jsonData = JSON.parse(dataLocal);
+    return Promise.resolve(jsonData);
+  } catch (error) {
+    console.log(error, "<<<<< ERROR GET My pokemon");
+    throw error;
+  }
+};
+
+
+
 module.exports = {
   getPokemonList,
   getPokemonDetail,
   catchPokemon,
+  getMyPoke,
 };
