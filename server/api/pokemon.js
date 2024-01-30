@@ -20,7 +20,8 @@ const allPokemon = async (request, reply) => {
 
 const detailPokemon = async (req, res) => {
   try {
-    const { id } = req.params;
+    ValidationHelper.detailPokemonValidation(req.query);
+    const { id } = req.query;
     const data = await PokemonHelper.getPokemonDetail(id);
     res
       .status(200)
@@ -33,6 +34,7 @@ const detailPokemon = async (req, res) => {
 
 const catchPokemon = async (req, res) => {
   try {
+    ValidationHelper.catchPokemonValidation(req.body);
     const { name } = req.body;
     const data = await PokemonHelper.catchPokemon(name);
     res.status(200).send({ message: "Pokemon berhasil ditangkap", data });
@@ -71,6 +73,7 @@ const releaseMyPokemon = async (request, reply) => {
 
 const renamePokemon = async (req, res) => {
   try {
+    ValidationHelper.renamePokemonValidation(req.body);
     const { id } = req.params;
     const { nickname } = req.body;
     const renamedPoke = await PokemonHelper.renamePoke(id, {
@@ -86,7 +89,7 @@ const renamePokemon = async (req, res) => {
 };
 
 Router.get("/all", allPokemon);
-Router.get("/detail/:id", detailPokemon);
+Router.get("/detail", detailPokemon);
 Router.post("/catch", catchPokemon);
 Router.get("/my-pokemon", getMyPokemon);
 Router.delete("/delete/:id", releaseMyPokemon);
