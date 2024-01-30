@@ -8,7 +8,7 @@ const pokemon = require("./server/api/pokemon");
 
 app.use("/pokemon", pokemon);
 
-const port = process.env.NODEJS_PORT || 8080;
+const port = process.env.NODEJS_PORT || 8000;
 
 app.get("/", (req, res) => {
   res.send("Succesfull Response");
