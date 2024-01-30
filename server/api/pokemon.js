@@ -4,17 +4,17 @@ const { request } = require("express");
 const PokemonHelper = require("../helpers/pokemonHelper");
 const ValidationHelper = require("../helpers/validationHelper");
 
-const allPokemon = async (request, reply) => {
+const allPokemon = async (req, res) => {
   try {
     const response = await PokemonHelper.getPokemonList();
-    return reply
+    return res
       .status(200)
-      .send({ message: "Data Pokemon berhasil didapat", data: response });
+      .send({ message: "Pokemon data received successfully", data: response });
   } catch (err) {
-    console.log("Data Pokemon gagal didapat");
-    reply
-      .status(400)
-      .send({ message: "Data Pokemon gagal didapat", data: err.message });
+    res.status(400).send({
+      message: "Pokemon data failed to be received",
+      data: err.message,
+    });
   }
 };
 
@@ -25,10 +25,12 @@ const detailPokemon = async (req, res) => {
     const data = await PokemonHelper.getPokemonDetail(id);
     res
       .status(200)
-      .send({ message: "Data Pokemon Detail berhasil didapat", data });
+      .send({ message: "Pokemon detail data successfully received", data });
   } catch (err) {
-    console.error("Gagal mendapatkan data pokemon >>>>>", err.message);
-    res.status(400).send({ message: err.message });
+    res.status(400).send({
+      message: "Failed to get pokemon data",
+      data: err.message,
+    });
   }
 };
 
@@ -37,54 +39,62 @@ const catchPokemon = async (req, res) => {
     ValidationHelper.catchPokemonValidation(req.body);
     const { name } = req.body;
     const data = await PokemonHelper.catchPokemon(name);
-    res.status(200).send({ message: "Pokemon berhasil ditangkap", data });
+    res.status(200).send({ message: "Pokemon successfully captured", data });
   } catch (err) {
-    console.error("Gagal mendapatkan pokemon >>>>>", err.message);
-    res.status(400).send({ message: err.message });
+    res.status(400).send({
+      message: "Pokemon failed to be captured",
+      data: err.message,
+    });
   }
 };
 
-const getMyPokemon = async (request, reply) => {
+const getMyPokemon = async (req, res) => {
   try {
     const response = await PokemonHelper.getMyPoke();
-    return reply
-      .status(200)
-      .send({ message: "Data Pokemon Saya berhasil didapat", data: response });
+    return res.status(200).send({
+      message: "My Pokemon data received successfully",
+      data: response,
+    });
   } catch (err) {
-    console.log("Data Pokemon gagal didapat");
-    reply
-      .status(400)
-      .send({ message: "Data Pokemon gagal didapat", data: err.message });
+    res.status(400).send({
+      message: "My Pokemon data failed to be received",
+      data: err.message,
+    });
   }
 };
 
-const releaseMyPokemon = async (request, reply) => {
+const releaseMyPokemon = async (req, res) => {
   try {
-    const { id } = request.params;
+    ValidationHelper.releasePokemonValidation(req.query);
+    const { id } = req.query;
     const data = await PokemonHelper.releasePoke(id);
-    reply
+    res
       .status(200)
-      .send({ message: "Data Pokemon  berhasil di release", data });
+      .send({ message: "Pokemon data successfully released", data });
   } catch (err) {
-    console.error("Error:", err);
-    reply.status(400).send({ message: err.message });
+    res.status(400).send({
+      message: "Pokemon data failed to release",
+      data: err.message,
+    });
   }
 };
 
 const renamePokemon = async (req, res) => {
   try {
-    ValidationHelper.renamePokemonValidation(req.body);
-    const { id } = req.params;
+    const { id } = req.query;
     const { nickname } = req.body;
+    ValidationHelper.renamePokemonValidation({ id, nickname });
     const renamedPoke = await PokemonHelper.renamePoke(id, {
       nickname,
     });
     res
       .status(200)
-      .send({ message: "Data Pokemon Detail berhasil diupdate", renamedPoke });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).send({ message: error.message });
+      .send({ message: "Pokemon data successfully renamed", renamedPoke });
+  } catch (err) {
+    res.status(400).send({
+      message: "Pokemon data failed to be renamed",
+      data: err.message,
+    });
   }
 };
 
@@ -92,6 +102,6 @@ Router.get("/all", allPokemon);
 Router.get("/detail", detailPokemon);
 Router.post("/catch", catchPokemon);
 Router.get("/my-pokemon", getMyPokemon);
-Router.delete("/delete/:id", releaseMyPokemon);
-Router.put("/rename/:id", renamePokemon);
+Router.delete("/release", releaseMyPokemon);
+Router.put("/rename", renamePokemon);
 module.exports = Router;
