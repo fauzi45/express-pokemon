@@ -53,13 +53,13 @@ const catchPokemon = async (name) => {
         url: `pokemon/${name}`,
       });
       const pokemonSame = jsonData.filter((pokemon) => pokemon.name === name);
-      if (pokemonSame) {
-        fibo = fibo + 1;
-      }
+      const fibonacciCount = general.fibonacci(pokemonSame.length - 1);
       const data = {
         id: jsonData.length + 1,
         name: response.name,
-        nickname: `${response.name}-${fibo}`,
+        nickname: `${response.name}${
+          pokemonSame.length === 0 ? "" : "-" +fibonacciCount
+        }`,
       };
 
       jsonData.push(data);
@@ -113,5 +113,5 @@ module.exports = {
   getPokemonDetail,
   catchPokemon,
   getMyPoke,
-  releasePoke
+  releasePoke,
 };

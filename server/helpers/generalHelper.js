@@ -57,7 +57,22 @@ function isPrime(num) {
   return true;
 }
 
+function fibonacci(n) {
+  if (n <= 0) return 0;
+  if (n === 1) return 1;
+
+  let prev = 0, curr = 1;
+  for (let i = 2; i <= n; i++) {
+      const temp = curr;
+      curr += prev;
+      prev = temp;
+  }
+  return curr;
+}
+
+
 module.exports = {
   commonHttpRequest,
-  isPrime
+  isPrime,
+  fibonacci
 };
