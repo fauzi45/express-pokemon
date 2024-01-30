@@ -1,8 +1,7 @@
 const _ = require("lodash");
 const fs = require("fs");
-const general = require("../helpers/generalHelper");
-const dataPath = (__dirname, "./assets/pokemon.json");
 
+const general = require("../helpers/generalHelper");
 const baseUrl = "https://pokeapi.co/api/v2/";
 const localUrl = (__dirname, "./assets/pokemon.json");
 
@@ -13,10 +12,8 @@ const getPokemonList = async () => {
       baseURL: baseUrl,
       url: "pokemon/",
     });
-    console.log(response.results);
     return Promise.resolve(response.results);
   } catch (error) {
-    console.log(error, "<<<<< ERROR GET pokemon");
     throw error;
   }
 };
@@ -34,14 +31,13 @@ const getPokemonDetail = async (id) => {
     };
     return Promise.resolve(data);
   } catch (error) {
-    console.log("Gagal mendapatkan data pokemon");
     throw error;
   }
 };
 
 const catchPokemon = async (name) => {
   try {
-    const isCaught = Math.random() < 1;
+    const isCaught = Math.random() < 0.5;
     if (isCaught) {
       const dataLocal = fs.readFileSync(localUrl, "utf-8");
       const jsonData = JSON.parse(dataLocal);
@@ -54,9 +50,13 @@ const catchPokemon = async (name) => {
       const pokemonSame = jsonData.filter(
         (pokemon) => pokemon.name === name.toLowerCase()
       );
+      if (!pokemonSame) {
+        throw new Error("Pokemon with this name doesn't exist");
+      }
       const fibonacciCount = general.fibonacci(pokemonSame.length - 1);
+      const latestId = jsonData.reduce((maxId, pokemon) => Math.max(maxId, pokemon.id), 0) + 1;
       const data = {
-        id: jsonData.length + 1,
+        id: latestId,
         name: response.name,
         nickname: `${response.name}${
           pokemonSame.length === 0 ? "" : "-" + fibonacciCount
@@ -67,11 +67,9 @@ const catchPokemon = async (name) => {
       fs.writeFileSync(localUrl, JSON.stringify(jsonData));
       return Promise.resolve(data);
     } else {
-      console.log("gagal");
-      throw new Error("Gagal mendapatkan pokemon");
+      throw new Error("Pokemon failed to be captured");
     }
   } catch (error) {
-    console.log("Gagal mendapatkan pokemon");
     throw error;
   }
 };
@@ -82,29 +80,26 @@ const getMyPoke = async () => {
     const jsonData = JSON.parse(dataLocal);
     return Promise.resolve(jsonData);
   } catch (error) {
-    console.log(error, "<<<<< ERROR GET My pokemon");
     throw error;
   }
 };
 
 const releasePoke = async (id) => {
   try {
-    const randomNumber = Math.floor(Math.random() * 10) + 1;
-
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
     if (general.isPrime(randomNumber)) {
       const data = fs.readFileSync(localUrl, "utf-8");
       const jsonData = JSON.parse(data);
-      const release = jsonData.filter((poke) => String(poke.id) !== id);
+      const release = jsonData.findIndex((poke) => String(poke.id) !== id);
       if (!release) {
-        throw new Error("Gagal Release pokemon");
+        throw new Error("Release Pokemon with this id doesn't exist");
       }
-      fs.writeFileSync(dataPath, JSON.stringify(release));
+      fs.writeFileSync(localUrl, JSON.stringify(release));
       return Promise.resolve(release);
     } else {
-      throw new Error("Number bukan prima, silahkan ulang kembali");
+      throw new Error("The opposite number is not prime, please try again");
     }
   } catch (error) {
-    console.log("Gagal mendapatkan data Pokemon");
     throw error;
   }
 };
@@ -116,27 +111,27 @@ const renamePoke = async (id, updatedDatas) => {
     const jsonData = JSON.parse(data);
     const index = jsonData.findIndex((pokemon) => String(pokemon.id) === id);
     if (index === -1) {
-      throw new Error("Pokemon dengan nama tersebut tidak ditemukan");
+      throw new Error("Rename Pokemon with this id doesn't exist");
     }
     const pokemonSame = jsonData.filter((pokemon) =>
       pokemon.nickname.includes(nickname.toLowerCase())
     );
     if (!pokemonSame) {
-      throw new Error("Gagal mendapatkan rename");
+      throw new Error("Pokemon with this nickname doesn't exist");
     }
     const fibonacciCount = general.fibonacci(pokemonSame.length - 1);
     const updatedPokemon = {
       ...jsonData[index],
       nickname:
-        `${nickname.toLowerCase()}${pokemonSame.length === 0 ? "" : "-" + fibonacciCount}` ||
-        jsonData[index].nickname,
+        `${nickname.toLowerCase()}${
+          pokemonSame.length === 0 ? "" : "-" + fibonacciCount
+        }` || jsonData[index].nickname,
     };
 
     jsonData[index] = updatedPokemon;
     fs.writeFileSync(localUrl, JSON.stringify(jsonData));
     return updatedPokemon;
   } catch (error) {
-    console.log("gagal rename pokemon");
     throw error;
   }
 };
